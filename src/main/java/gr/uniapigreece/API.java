@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class API {
 
-    @PostMapping("/processInput")
+    @PostMapping("/v1")
     public JSONObject processInput(@RequestBody String userInput) {
         JSONObject output = new JSONObject();
-        output.put("t" , "sss");
+        output.put("message" , "this is a message from docker");
         return output;
     }
 }
