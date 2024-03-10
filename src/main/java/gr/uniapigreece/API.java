@@ -91,6 +91,9 @@ public class API {
 
 
         output.put("success" , "200");
+        output.put("fname"   , sinfo.firstName);
+        output.put("lname"   , sinfo.lastName);
+
         return output;
     }
 }
