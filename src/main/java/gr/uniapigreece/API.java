@@ -3,15 +3,19 @@ package gr.uniapigreece;
 import gr.unistudents.services.student.StudentService;
 import gr.unistudents.services.student.components.Options;
 import gr.unistudents.services.student.components.StudentResponse;
-
+import gr.unistudents.services.student.exceptions.NotAuthorizedException;
+import gr.unistudents.services.student.exceptions.NotReachableException;
+import gr.unistudents.services.student.exceptions.ParserException;
+import gr.unistudents.services.student.exceptions.ScraperException;
 import gr.unistudents.services.student.models.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -36,44 +40,57 @@ public class API {
 
     @PostMapping("/v1")
     public JSONObject processInput(@RequestBody String input) {
+        JSONParser parser = new JSONParser();
         JSONObject output = new JSONObject();
-        try{
-            JSONParser parser = new JSONParser();
-            JSONObject json = (JSONObject) parser.parse(input);
-
-            Options options = new Options();
-            options.username = json.get("u").toString();
-            options.password = json.get("p").toString();
-            options.university = json.get("i").toString();
-            options.system = "";
-            options.userAgent = "Mozilla/5.0";
-            StudentService ss = new StudentService(options);
-            StudentResponse r =  ss.getStudent();
-
-            Student student = r.getStudent();
-            Progress sP     = r.getStudent().progress;
-            Info sinfo = student.info;
+        JSONObject json = null;
+        try {json = (JSONObject) parser.parse(input);}
+        catch (ParseException e) {return ParserExceptionJSON;}
 
 
-            System.out.println(sinfo.firstName + " " + sinfo.lastName);
-            System.out.println(sinfo.aem);
-            System.out.println(sinfo.specialtyId);
-            System.out.println(sinfo.specialtyTitle);
+        Options options = new Options();
+        options.username = json.get("u").toString();
+        options.password = json.get("p").toString();
+        options.university = json.get("i").toString();
+        options.system = "";
+        options.userAgent = "Mozilla/5.0";
+        StudentService ss = null;
+        StudentResponse r = null;
 
-            JSONArray coursesJSON = new JSONArray();
-            ArrayList<Semester> s = sP.semesters;
-            for (int i = 0; i < s.size(); i++) {
-                Semester semester = s.get(i);
-                ArrayList<Course> classes = semester.courses;
-                for (Course course : classes) {
-                    System.out.println(course.name);
-                }
+        try {ss = new StudentService(options);} catch (Exception e) {return StudentServiceExceptionJSON;}
+        try {r = ss.getStudent();} catch (ScraperException e) {return ScraperExceptionJSON;}
+        catch (NotReachableException e) {return NotReachableException;}
+        catch (NotAuthorizedException e) {return NotAuthorizedException;}
+        catch (ParserException e) {return ParserException;}
+
+        Student student = r.getStudent();
+        Progress sP     = r.getStudent().progress;
+        Info sinfo = student.info;
+
+
+        System.out.println(sinfo.firstName + " " + sinfo.lastName);
+        System.out.println(sinfo.aem);
+        System.out.println(sinfo.specialtyId);
+        System.out.println(sinfo.specialtyTitle);
+
+
+
+
+        JSONArray coursesJSON = new JSONArray();
+        ArrayList<Semester> s = sP.semesters;
+        for (int i = 0; i < s.size(); i++) {
+            Semester semester = s.get(i);
+
+            ArrayList<Course> classes = semester.courses;
+            for (Course course : classes) {
+                System.out.println(course.name);
             }
 
-            output.put("success" , "200");
-        }catch (Exception e){
-
         }
+
+
+
+
+        output.put("success" , "200");
         return output;
     }
 }
