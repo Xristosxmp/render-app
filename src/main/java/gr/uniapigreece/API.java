@@ -3,19 +3,15 @@ package gr.uniapigreece;
 import gr.unistudents.services.student.StudentService;
 import gr.unistudents.services.student.components.Options;
 import gr.unistudents.services.student.components.StudentResponse;
-import gr.unistudents.services.student.exceptions.NotAuthorizedException;
-import gr.unistudents.services.student.exceptions.NotReachableException;
-import gr.unistudents.services.student.exceptions.ParserException;
-import gr.unistudents.services.student.exceptions.ScraperException;
+
 import gr.unistudents.services.student.models.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api")
@@ -39,13 +35,10 @@ public class API {
     }
 
     @PostMapping("/v1")
-    public JSONObject processInput(@RequestBody String input) {
+    public JSONObject processInput(@RequestBody String input) throws Exception {
         JSONParser parser = new JSONParser();
         JSONObject output = new JSONObject();
-        JSONObject json = null;
-        try {json = (JSONObject) parser.parse(input);}
-        catch (ParseException e) {return ParserExceptionJSON;}
-
+        JSONObject json = (JSONObject) parser.parse(input);
 
         Options options = new Options();
         options.username = json.get("u").toString();
@@ -53,14 +46,8 @@ public class API {
         options.university = json.get("i").toString();
         options.system = "";
         options.userAgent = "Mozilla/5.0";
-        StudentService ss = null;
-        StudentResponse r = null;
-
-        try {ss = new StudentService(options);} catch (Exception e) {return StudentServiceExceptionJSON;}
-        try {r = ss.getStudent();} catch (ScraperException e) {return ScraperExceptionJSON;}
-        catch (NotReachableException e) {return NotReachableException;}
-        catch (NotAuthorizedException e) {return NotAuthorizedException;}
-        catch (ParserException e) {return ParserException;}
+        StudentService ss = new StudentService(options);
+        StudentResponse r =  ss.getStudent();
 
         Student student = r.getStudent();
         Progress sP     = r.getStudent().progress;
