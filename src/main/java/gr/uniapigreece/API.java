@@ -43,49 +43,49 @@ public class API {
         JSONParser parser = new JSONParser();
         JSONObject output = new JSONObject();
         JSONObject json = null;
-//        try {json = (JSONObject) parser.parse(input);}
-//        catch (ParseException e) {return ParserExceptionJSON;}
-//
-//
-//        Options options = new Options();
-//        options.username = json.get("u").toString();
-//        options.password = json.get("p").toString();
-//        options.university = json.get("i").toString();
-//        options.system = "";
-//        options.userAgent = "Mozilla/5.0";
-//        StudentService ss = null;
-//        StudentResponse r = null;
+        try {json = (JSONObject) parser.parse(input);}
+        catch (ParseException e) {return ParserExceptionJSON;}
 
-//        try {ss = new StudentService(options);} catch (Exception e) {return StudentServiceExceptionJSON;}
-//        try {r = ss.getStudent();} catch (ScraperException e) {return ScraperExceptionJSON;}
-//        catch (NotReachableException e) {return NotReachableException;}
-//        catch (NotAuthorizedException e) {return NotAuthorizedException;}
-//        catch (ParserException e) {return ParserException;}
-//
-//        Student student = r.getStudent();
-//        Progress sP     = r.getStudent().progress;
-//        Info sinfo = student.info;
-//
-//
-//        System.out.println(sinfo.firstName + " " + sinfo.lastName);
-//        System.out.println(sinfo.aem);
-//        System.out.println(sinfo.specialtyId);
-//        System.out.println(sinfo.specialtyTitle);
-//
-//
-//
-//
-//        JSONArray coursesJSON = new JSONArray();
-//        ArrayList<Semester> s = sP.semesters;
-//        for (int i = 0; i < s.size(); i++) {
-//            Semester semester = s.get(i);
-//
-//            ArrayList<Course> classes = semester.courses;
-//            for (Course course : classes) {
-//                System.out.println(course.name);
-//            }
-//
-//        }
+
+        Options options = new Options();
+        options.username = json.get("u").toString();
+        options.password = json.get("p").toString();
+        options.university = json.get("i").toString();
+        options.system = "";
+        options.userAgent = "Mozilla/5.0";
+        StudentService ss = null;
+        StudentResponse r = null;
+
+        try {ss = new StudentService(options);} catch (Exception e) {return StudentServiceExceptionJSON;}
+        try {r = ss.getStudent();} catch (ScraperException e) {return ScraperExceptionJSON;}
+        catch (NotReachableException e) {return NotReachableException;}
+        catch (NotAuthorizedException e) {return NotAuthorizedException;}
+        catch (ParserException e) {return ParserException;}
+
+        Student student = r.getStudent();
+        Progress sP     = r.getStudent().progress;
+        Info sinfo = student.info;
+
+
+        System.out.println(sinfo.firstName + " " + sinfo.lastName);
+        System.out.println(sinfo.aem);
+        System.out.println(sinfo.specialtyId);
+        System.out.println(sinfo.specialtyTitle);
+
+
+
+
+        JSONArray coursesJSON = new JSONArray();
+        ArrayList<Semester> s = sP.semesters;
+        for (int i = 0; i < s.size(); i++) {
+            Semester semester = s.get(i);
+
+            ArrayList<Course> classes = semester.courses;
+            for (Course course : classes) {
+                System.out.println(course.name);
+            }
+
+        }
 
 
 
