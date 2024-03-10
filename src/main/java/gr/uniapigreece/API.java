@@ -93,7 +93,7 @@ public class API {
         output.put("success" , "200");
         output.put("fname"   , sinfo.firstName);
         output.put("lname"   , sinfo.lastName);
-
+        output.put("aem"     , sinfo.aem);
         return output;
     }
 }
