@@ -35,49 +35,45 @@ public class API {
     }
 
     @PostMapping("/v1")
-    public JSONObject processInput(@RequestBody String input) throws Exception {
-        JSONParser parser = new JSONParser();
+    public JSONObject processInput(@RequestBody String input) {
         JSONObject output = new JSONObject();
-        JSONObject json = (JSONObject) parser.parse(input);
+        try{
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(input);
 
-        Options options = new Options();
-        options.username = json.get("u").toString();
-        options.password = json.get("p").toString();
-        options.university = json.get("i").toString();
-        options.system = "";
-        options.userAgent = "Mozilla/5.0";
-        StudentService ss = new StudentService(options);
-        StudentResponse r =  ss.getStudent();
+            Options options = new Options();
+            options.username = json.get("u").toString();
+            options.password = json.get("p").toString();
+            options.university = json.get("i").toString();
+            options.system = "";
+            options.userAgent = "Mozilla/5.0";
+            StudentService ss = new StudentService(options);
+            StudentResponse r =  ss.getStudent();
 
-        Student student = r.getStudent();
-        Progress sP     = r.getStudent().progress;
-        Info sinfo = student.info;
-
-
-        System.out.println(sinfo.firstName + " " + sinfo.lastName);
-        System.out.println(sinfo.aem);
-        System.out.println(sinfo.specialtyId);
-        System.out.println(sinfo.specialtyTitle);
+            Student student = r.getStudent();
+            Progress sP     = r.getStudent().progress;
+            Info sinfo = student.info;
 
 
+            System.out.println(sinfo.firstName + " " + sinfo.lastName);
+            System.out.println(sinfo.aem);
+            System.out.println(sinfo.specialtyId);
+            System.out.println(sinfo.specialtyTitle);
 
-
-        JSONArray coursesJSON = new JSONArray();
-        ArrayList<Semester> s = sP.semesters;
-        for (int i = 0; i < s.size(); i++) {
-            Semester semester = s.get(i);
-
-            ArrayList<Course> classes = semester.courses;
-            for (Course course : classes) {
-                System.out.println(course.name);
+            JSONArray coursesJSON = new JSONArray();
+            ArrayList<Semester> s = sP.semesters;
+            for (int i = 0; i < s.size(); i++) {
+                Semester semester = s.get(i);
+                ArrayList<Course> classes = semester.courses;
+                for (Course course : classes) {
+                    System.out.println(course.name);
+                }
             }
 
+            output.put("success" , "200");
+        }catch (Exception e){
+
         }
-
-
-
-
-        output.put("success" , "200");
         return output;
     }
 }
