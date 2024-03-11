@@ -71,7 +71,8 @@ public class API {
         System.out.println(sinfo.aem);
         System.out.println(sinfo.specialtyId);
         System.out.println(sinfo.specialtyTitle);
-
+        System.out.println(sinfo.registrationYear);
+        System.out.println(sinfo.currentSemester);
 
 
 
@@ -91,9 +92,12 @@ public class API {
 
 
         output.put("success" , "200");
-        output.put("fname"   , sinfo.firstName);
-        output.put("lname"   , sinfo.lastName);
-        output.put("aem"     , sinfo.aem);
+        output.put("fname"   ,  sinfo.firstName);
+        output.put("lname"   ,  sinfo.lastName);
+        output.put("aem"     ,  sinfo.aem);
+        output.put("year"     , sinfo.registrationYear);
+        output.put("currentSemester" , sinfo.currentSemester);
+
         return output;
     }
 }
