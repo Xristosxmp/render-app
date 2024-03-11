@@ -97,6 +97,7 @@ public class API {
         output.put("aem"     ,  sinfo.aem);
         output.put("year"     , sinfo.registrationYear);
         output.put("currentSemester" , sinfo.currentSemester);
+        output.put("department" , sinfo.departmentTitle);
 
         return output;
     }
