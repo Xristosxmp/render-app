@@ -73,6 +73,8 @@ public class API {
         Progress sP     = r.getStudent().progress;
         Info sinfo = student.info;
 
+        System.out.println(r.cookies.get("token"));
+
         int TotalCoursesNull = 0;
         int TotalCoursesFailed = 0;
         int TotalCoursesInSecretary = 0;
@@ -91,6 +93,7 @@ public class API {
             JSONArray  CLASSES_PER_SEMESTER = new JSONArray();
             ArrayList<Course> classes = semester.courses;
             for (Course course : classes) {
+
                     JSONObject CLASS = new JSONObject();
                     CLASS.put("course_name" , course.name);
                     CLASS.put("course_grade", (course.latestExamGrade == null ? "-" : course.latestExamGrade.grade));
@@ -125,6 +128,12 @@ public class API {
                             if(course.latestExamGrade.grade < 5.0)
                                 TotalCoursesFailed++;
 
+//                    if(course.latestExamGrade != null){
+//                        if(course.latestExamGrade.externalId != null){
+//                            String exams_statistic = new ScrapeExamStatistics().getInfo(r.cookies.get("token") , course.latestExamGrade.externalId);
+//                            System.out.println(exams_statistic);
+//                        }
+//                    }
                     TotalCoursesECTSInSecretary += course.ects;
                 }
             TotalCoursesInSecretary += semester.courses.size();
@@ -132,7 +141,6 @@ public class API {
             SEM.put("courses", CLASSES_PER_SEMESTER);
             COURSE_MAIN_ARRAY.add(SEM);
         }
-
 
 
         output.put("totalECTS" , sP.ects);
@@ -152,7 +160,6 @@ public class API {
         output.put("studentSemester" , sinfo.currentSemester);
         output.put("studentTotalClassesInSecretary" , TotalCoursesInSecretary);
         output.put("studentTotalECTSInSecretary" , TotalCoursesECTSInSecretary);
-
         output.put("coursesArray",COURSE_MAIN_ARRAY);
 
         return output;
