@@ -10,6 +10,9 @@ import gr.unistudents.services.student.exceptions.ParserException;
 import gr.unistudents.services.student.exceptions.ScraperException;
 import gr.unistudents.services.student.models.*;
 import gr.unistudents.services.student.scrapers.UOPScraper;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -59,10 +62,14 @@ public class API {
         catch (ParserException e) {return ParserException;}
         Student student = r.getStudent();
         Progress sP     = r.getStudent().progress;
+        sP.ects = 0.0;
+        sP.passedCourses = 0;
         Info sinfo = student.info;
         int TotalCoursesNull = 0;
         int TotalCoursesFailed = 0;
         int TotalCoursesInSecretary = 0;
+        int TotalCoursesYpassed = 0;
+        int TotalCoursesEpassed = 0;
         double TotalCoursesECTSInSecretary = 0.0;
         JSONArray COURSE_MAIN_ARRAY = new JSONArray();
         ArrayList<Semester> s = sP.semesters;
@@ -84,8 +91,24 @@ public class API {
             CLASS.put("course_code" , course.displayCode);
             CLASS.put("course_ects" , course.ects);
             CLASS.put("course_id" , (course.latestExamGrade == null ? null : course.latestExamGrade.externalId));
+            CLASS.put("course_type" , course.type);
+            if(course.latestExamGrade != null){
+                if(course.latestExamGrade.isPassed){
+                    switch (course.type) {
+                        case "Υ":
+                           TotalCoursesYpassed++;
+                            break;
+                        case "Ε":
+                            TotalCoursesEpassed++;
+                            break;
+                    }
+                    sP.ects += course.ects;
+                    sP.passedCourses += 1;
+                }
+            }
             CLASSES_PER_SEMESTER.add(CLASS);
-            if(course.subCourses != null || course.subCourses.size() > 0){
+            if(!course.subCourses.isEmpty()){
+                double M_O = 0.0;
                 for(Course subCourse : course.subCourses){
                     JSONObject SCLASS = new JSONObject();
                     SCLASS.put("course_name" , subCourse.name);
@@ -96,12 +119,26 @@ public class API {
                     SCLASS.put("SUBCOURSE" , true);
                     SCLASS.put("course_id" , (subCourse.latestExamGrade == null ? null : subCourse.latestExamGrade.externalId));
                     SCLASS.put("course_instructor" , subCourse.instructor);
+                    SCLASS.put("course_type" , subCourse.type);
                     CLASSES_PER_SEMESTER.add(SCLASS);
                     if(subCourse.latestExamGrade == null) TotalCoursesNull++;
-                    if(subCourse.latestExamGrade != null)
-                    if(subCourse.latestExamGrade.grade != null)
-                    if(subCourse.latestExamGrade.grade < 5.0)
-                    TotalCoursesFailed++;
+                    if(subCourse.latestExamGrade != null)  if(subCourse.latestExamGrade.grade != null) if(!subCourse.latestExamGrade.isPassed) TotalCoursesFailed++;
+                    if(subCourse.latestExamGrade != null)  if(subCourse.latestExamGrade.grade != null) M_O += subCourse.latestExamGrade.grade;
+                }
+                if(course.latestExamGrade == null){
+                    if((M_O/2.0) >= 5.0){
+                        switch (course.type) {
+                            case "Υ":
+                                TotalCoursesYpassed++;
+                                break;
+                            case "Ε":
+                                TotalCoursesEpassed++;
+                                break;
+                        }
+                        CLASS.put("course_grade" , (M_O/2.0));
+                        sP.ects += course.ects;
+                        sP.passedCourses += 1;
+                    }
                 }
             }
             CLASS.put("course_instructor" , course.instructor);
@@ -109,9 +146,9 @@ public class API {
             if(course.latestExamGrade == null) TotalCoursesNull++;
             if(course.latestExamGrade != null)
             if(course.latestExamGrade.grade != null)
-            if(course.latestExamGrade.grade < 5.0)
-            TotalCoursesFailed++;
-            TotalCoursesECTSInSecretary += course.ects;
+            if(!course.latestExamGrade.isPassed)
+                TotalCoursesFailed++;
+                TotalCoursesECTSInSecretary += course.ects;
             }
             TotalCoursesInSecretary += semester.courses.size();
             SEM.put("ECTS_TOTAL_ALL_CLASS" , ECTS_TOTAL_PER_CLASS);
@@ -136,6 +173,8 @@ public class API {
         output.put("studentTotalClassesInSecretary" , TotalCoursesInSecretary);
         output.put("studentTotalECTSInSecretary" , TotalCoursesECTSInSecretary);
         output.put("coursesArray",COURSE_MAIN_ARRAY);
+        output.put("TotalMandatoryCoursesPassed" , TotalCoursesYpassed);
+        output.put("TotalElectiveCoursesPassed" , TotalCoursesEpassed);
         output.put("bearer" , r.cookies.get("token"));
         ScrapeThesis thesis = new ScrapeThesis(r.cookies.get("token"));
         JSONArray THESIS = new JSONArray();
