@@ -30,10 +30,8 @@ public class ScrapeExamStatistics {
         ParserException.put("exception" , "Δεν υπάρχουν αποτελέσματα");
     }
 
-
     @PostMapping("/exam")
     public String getInfo(@RequestBody String input) throws NotAuthorizedException, IOException {
-
         JSONParser parser = new JSONParser();
         JSONObject json = null;
         try {json = (JSONObject) parser.parse(input);}

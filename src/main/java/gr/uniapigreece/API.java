@@ -1,12 +1,15 @@
 package gr.uniapigreece;
 import gr.unistudents.services.student.StudentService;
 import gr.unistudents.services.student.components.Options;
+import gr.unistudents.services.student.components.ScraperOutput;
 import gr.unistudents.services.student.components.StudentResponse;
+import gr.unistudents.services.student.components.University;
 import gr.unistudents.services.student.exceptions.NotAuthorizedException;
 import gr.unistudents.services.student.exceptions.NotReachableException;
 import gr.unistudents.services.student.exceptions.ParserException;
 import gr.unistudents.services.student.exceptions.ScraperException;
 import gr.unistudents.services.student.models.*;
+import gr.unistudents.services.student.scrapers.UOPScraper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -49,17 +52,14 @@ public class API {
         options.userAgent = "Mozilla/5.0";
         StudentService ss = null;
         StudentResponse r = null;
-
         try {ss = new StudentService(options);} catch (Exception e) {return StudentServiceExceptionJSON;}
         try {r = ss.getStudent();} catch (ScraperException e) {return ScraperExceptionJSON;}
         catch (NotReachableException e) {return NotReachableException;}
         catch (NotAuthorizedException e) {return NotAuthorizedException;}
         catch (ParserException e) {return ParserException;}
         Student student = r.getStudent();
-
         Progress sP     = r.getStudent().progress;
         Info sinfo = student.info;
-
         int TotalCoursesNull = 0;
         int TotalCoursesFailed = 0;
         int TotalCoursesInSecretary = 0;
@@ -68,7 +68,6 @@ public class API {
         ArrayList<Semester> s = sP.semesters;
         for (int i = 0; i < s.size(); i++) {
             Semester semester = s.get(i);
-
             double ECTS_TOTAL_PER_CLASS = 0.0;
             JSONObject SEM = new JSONObject();
             SEM.put("semesterECTS" , semester.ects);
@@ -113,7 +112,7 @@ public class API {
             if(course.latestExamGrade.grade < 5.0)
             TotalCoursesFailed++;
             TotalCoursesECTSInSecretary += course.ects;
-                }
+            }
             TotalCoursesInSecretary += semester.courses.size();
             SEM.put("ECTS_TOTAL_ALL_CLASS" , ECTS_TOTAL_PER_CLASS);
             SEM.put("courses", CLASSES_PER_SEMESTER);
@@ -138,6 +137,16 @@ public class API {
         output.put("studentTotalECTSInSecretary" , TotalCoursesECTSInSecretary);
         output.put("coursesArray",COURSE_MAIN_ARRAY);
         output.put("bearer" , r.cookies.get("token"));
+        ScrapeThesis thesis = new ScrapeThesis(r.cookies.get("token"));
+        JSONArray THESIS = new JSONArray();
+        JSONObject THESISOBJ = new JSONObject();
+        THESISOBJ.put("hasThesis" , thesis.hasThesis);
+        THESISOBJ.put("name" , thesis.thesis_name);
+        THESISOBJ.put("instructor" , thesis.thesis_instructor);
+        THESIS.add(THESISOBJ);
+        output.put("thesis" , THESIS);
+        ScrapeGradutionRules grad = new ScrapeGradutionRules(r.cookies.get("token"));
+        output.put("graduation" , grad.grad_rules);
         return output;
     }
 }
